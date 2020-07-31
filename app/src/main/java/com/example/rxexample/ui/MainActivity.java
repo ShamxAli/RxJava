@@ -3,6 +3,7 @@ package com.example.rxexample.ui;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.rxexample.R;
@@ -15,6 +16,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +33,16 @@ public class MainActivity extends AppCompatActivity {
 
         Observable<Task> observable = Observable // create a new Observable object
                 .fromIterable(DataSource.createTasksList()) // apply 'fromIterable' operator
+                // working on background thread
+                .filter(new Predicate<Task>() {
+                    @Override
+                    public boolean test(Task task) throws Throwable {
+                        SystemClock.sleep(10000);
+                        Log.d(TAG, " filter ");
+                        // if successful
+                        return task.isComplete();
+                    }
+                })
                 .subscribeOn(Schedulers.io()) // designate worker thread (background)
                 .observeOn(AndroidSchedulers.mainThread()); // designate observer thread (main thread)
 
