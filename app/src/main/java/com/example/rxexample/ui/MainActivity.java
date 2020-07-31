@@ -35,13 +35,18 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Single object observable
-        Task task = new Task("Hello to the future", true, 1);
 
         Observable<Task> observable = Observable.create(new ObservableOnSubscribe<Task>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Task> emitter) throws Throwable {
-                if (!emitter.isDisposed()) {
+
+
+                for (Task task : DataSource.createTasksList()) {
                     emitter.onNext(task);
+
+                }
+
+                if (!emitter.isDisposed()) {
                     emitter.onComplete();
                 }
             }
@@ -59,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNext(@NonNull Task task) {
+                Log.d(TAG, "onNext: called");
 
             }
 
