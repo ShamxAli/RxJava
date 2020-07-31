@@ -13,6 +13,8 @@ import com.example.rxexample.utils.DataSource;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -31,20 +33,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Observable<Task> observable = Observable // create a new Observable object
-                .fromIterable(DataSource.createTasksList()) // apply 'fromIterable' operator
-                // working on background thread
-                .filter(new Predicate<Task>() {
-                    @Override
-                    public boolean test(Task task) throws Throwable {
-                        SystemClock.sleep(10000);
-                        Log.d(TAG, " filter ");
-                        // if successful
-                        return task.isComplete();
-                    }
-                })
-                .subscribeOn(Schedulers.io()) // designate worker thread (background)
-                .observeOn(AndroidSchedulers.mainThread()); // designate observer thread (main thread)
+
+        // Single object observable
+        Task task = new Task("Hello to the future", true, 1);
+
+        Observable<Task> observable = Observable.create(new ObservableOnSubscribe<Task>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Task> emitter) throws Throwable {
+                if (!emitter.isDisposed()) {
+                    emitter.onNext(task);
+                    emitter.onComplete();
+                }
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
 
 
         observable.subscribe(new Observer<Task>() {
@@ -56,20 +59,21 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNext(@NonNull Task task) {
-                Log.d(TAG, "onNext: called");
-                Log.d(TAG, "Thread : " + Thread.currentThread().getName());
+
             }
 
             @Override
             public void onError(@NonNull Throwable e) {
-                Log.d(TAG, "onError: called");
+
             }
 
             @Override
             public void onComplete() {
-                Log.d(TAG, "onComplete: called");
+
             }
         });
+
+
     }
 
     @Override
